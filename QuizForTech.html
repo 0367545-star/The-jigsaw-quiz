@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigsaw Quiz</title>
+    <style>
+        #loseMessage {
+            display: none; /* Initially hidden */
+            color: red;
+            font-weight: bold;
+        }
+        #retryButton {
+            display: none; /* Initially hidden */
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<p>WELCOME TO THE JIGSAW QUIZ!</p>
+<p>So you want to be tested do you? Well, you have come to the right place. Here are the rules:</p>
+<ul>
+    <li>You will be given a time limit of 10 seconds for each question.</li>
+    <li>If you fail a question, I will give you a chance to continue; all you have to do is escape a trap that I created, that is why I called it the jigsaw quiz.</li>
+    <li>NO CHEATING! If I find a cheater, you will get an impossible trap.</li>
+</ul>
+<p>- Good luck!</p>
+<p>Press the button to begin</p>
+
+<button id="signButton">This button to start</button>
+<p id="loseMessage">YOU LOSE!</p>
+<button id="retryButton" onclick="retryQuiz()">Retry</button>
+
+<script>
+let timeoutId; // Declare timeoutId to manage the timeout
+
+function askQuestion(question, correctAnswer, nextQuestion, nextCorrectAnswer, trapQuestion, trapCorrectAnswer) {
+    return new Promise((resolve) => {
+        const answer = prompt(question);
+        if (answer === null) {
+            alert('You lost by canceling the prompt!');
+            resolve(false);
+            return;
+        }
+        
+        clearTimeout(timeoutId); // Clear the timeout when the answer is received
+
+        if (answer === correctAnswer) {
+            alert('Correct!');
+            if (nextQuestion) {
+                resolve(askQuestion(nextQuestion, nextCorrectAnswer, null, null, trapQuestion, trapCorrectAnswer));
+            } else {
+                alert('You win!');
+                resolve(true);
+            }
+        } else {
+            alert('Incorrect! Solve this to continue:');
+            const trapAnswer = prompt(trapQuestion);
+            if (trapAnswer === null) {
+                alert('You lost by canceling the prompt!');
+                resolve(false);
+                return;
+            }
+            if (trapAnswer === trapCorrectAnswer) {
+                alert('Correct! You escaped the trap!');
+                resolve(true);
+            } else {
+                resolve(false); // Directly resolve to false if trap answer is wrong
+            }
+        }
+    });
+}
+
+function retryQuiz() {
+    location.reload(); // Reloads the page
+}
+
+document.getElementById('signButton').addEventListener('click', () => {
+    const trimmedName = prompt('Please enter your name:');
+    if (trimmedName && trimmedName.trim() !== '') {
+        alert(`Thank you for playing, ${trimmedName}!`);
+
+        // Start the quiz
+        const question1 = "7 x 41 = ?";
+        const correctAnswer1 = "287";
+        const question2 = "100 x 6 = ?";
+        const correctAnswer2 = "600";
+        const trapQuestion = "1297 x 68 = ?";
+        const trapCorrectAnswer = "88196";
+
+        const askNextQuestion = async (question, correctAnswer, nextQuestion, nextCorrectAnswer) => {
+            timeoutId = setTimeout(() => {
+                document.getElementById('loseMessage').style.display = 'block'; // Show lose message
+                document.getElementById('retryButton').style.display = 'block'; // Show retry button
+            }, 10000); // 10 seconds
+
+            const result = await askQuestion(question, correctAnswer, nextQuestion, nextCorrectAnswer, trapQuestion, trapCorrectAnswer);
+            clearTimeout(timeoutId); // Clear the timeout if the quiz is completed successfully or lost
+            
+            if (!result) {
+                document.getElementById('loseMessage').style.display = 'block'; // Show lose message
+                document.getElementById('retryButton').style.display = 'block'; // Show retry button
+            }
+        };
+
+        askNextQuestion(question1, correctAnswer1, question2, correctAnswer2).then(result => {
+            // Handle the result if needed
+        });
+
+    } else {
+        alert('Please enter a valid name.');
+    }
+});
+</script>
+
+</body>
+</html>
